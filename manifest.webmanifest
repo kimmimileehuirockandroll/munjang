@@ -1,0 +1,14 @@
+{
+  "name": "문장서랍",
+  "short_name": "문장서랍",
+  "description": "책 속 아껴 둔 문장을 서랍에 담고, 오늘의 한 문장을 꺼내 봅니다.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFDFB",
+  "theme_color": "#FFFDFB",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

@@ -125,6 +125,13 @@ body{
 .langpick button{font-family:inherit;font-size:12px;font-weight:500;color:var(--brown-soft);
   background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;}
 .langpick button.on{background:var(--terracotta);color:#fff;border-color:var(--terracotta);}
+/* 최근 사용한 책/저자 칩 */
+.recents{display:none;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 2px 0;}
+.recents .rlabel{font-size:10.5px;color:var(--brown-soft);margin-right:2px;}
+.rchip{font-family:inherit;font-size:11.5px;font-weight:500;color:var(--terracotta-d);
+  background:#F7EDE6;border:1px solid #EEDFD3;border-radius:999px;padding:5px 11px;cursor:pointer;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rchip:active{background:#F0DECE;}
 .qcard .del:active{opacity:1;}
 .backup{display:flex;gap:8px;margin:18px 2px 0;padding-top:14px;border-top:1px dashed var(--line);}
 .mini{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:1px solid var(--line);
@@ -323,9 +330,11 @@ textarea:focus,input:focus{outline:none;border-color:var(--terracotta);}
     <div class="field"><label>마음에 담을 문장</label>
       <textarea id="typeText" rows="4" placeholder="예) 우리는 모두 시궁창에 있지만, 그 중 몇몇은 별을 바라본다."></textarea></div>
     <div class="field"><label>책 제목 <span class="opt">(선택)</span></label>
-      <input type="text" id="typeBook" placeholder="예) 도리언 그레이의 초상" /></div>
+      <input type="text" id="typeBook" placeholder="예) 도리언 그레이의 초상" />
+      <div class="recents" id="recBook"></div></div>
     <div class="field"><label>저자 <span class="opt">(선택)</span></label>
-      <input type="text" id="typeAuthor" placeholder="예) 오스카 와일드" /></div>
+      <input type="text" id="typeAuthor" placeholder="예) 오스카 와일드" />
+      <div class="recents" id="recAuthor"></div></div>
     <div class="field"><label>페이지 <span class="opt">(선택)</span></label>
       <input type="text" id="typePage" inputmode="numeric" placeholder="예) 152" /></div>
     <div class="field"><label>내 생각 <span class="opt">(선택)</span></label>
@@ -385,7 +394,9 @@ textarea:focus,input:focus{outline:none;border-color:var(--terracotta);}
         <label>이 문장을 담을까요?</label>
         <textarea id="selText" rows="3" style="margin-top:8px"></textarea>
         <input type="text" id="ocrBook" placeholder="책 제목 (선택)" style="margin-top:10px" />
+        <div class="recents" id="recBookOcr"></div>
         <input type="text" id="ocrAuthor" placeholder="저자 (선택)" style="margin-top:8px" />
+        <div class="recents" id="recAuthorOcr"></div>
         <input type="text" id="ocrPage" inputmode="numeric" placeholder="페이지 (선택)" style="margin-top:8px" />
         <input type="text" id="ocrThought" placeholder="내 생각 (선택)" style="margin-top:8px" />
         <button class="primary" onclick="saveOcr()">
@@ -450,6 +461,7 @@ function showView(name){
   if(name==='home')renderHome();
   if(name==='lib')renderLib();
   if(name==='photo')resetPhoto();
+  if(name==='type'||name==='photo')renderRecents();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -459,6 +471,30 @@ function cite(q,fb){
   let s=(b&&a)?b+' · '+a:(b||a||'');
   if(p) s = s ? s+' · p.'+p : 'p.'+p;
   return s||fb;
+}
+
+/* 최근에 쓴 책/저자 목록 (중복 제거, 최신순) */
+function recentVals(field){
+  const seen=new Set(),out=[];
+  quotes.slice().sort((a,b)=>b.date-a.date).forEach(q=>{
+    const v=(q[field]||'').trim();
+    if(v&&!seen.has(v)){seen.add(v);out.push(v);}
+  });
+  return out.slice(0,6);
+}
+function fillField(inputId,btn){document.getElementById(inputId).value=btn.textContent;document.getElementById(inputId).focus();}
+function chipRow(containerId,field,inputId){
+  const el=document.getElementById(containerId);if(!el)return;
+  const vals=recentVals(field);
+  if(!vals.length){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='flex';
+  el.innerHTML='<span class="rlabel">최근</span>'+vals.map(v=>`<button type="button" class="rchip" onclick="fillField('${inputId}',this)">${esc(v)}</button>`).join('');
+}
+function renderRecents(){
+  chipRow('recBook','book','typeBook');
+  chipRow('recAuthor','author','typeAuthor');
+  chipRow('recBookOcr','book','ocrBook');
+  chipRow('recAuthorOcr','author','ocrAuthor');
 }
 
 /* ---------------- home widget ---------------- */
